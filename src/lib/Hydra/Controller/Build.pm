@@ -285,29 +285,7 @@ sub download : Chained('buildChain') PathPart {
     my $path = $product->path;
     $path .= "/" . join("/", @path) if scalar @path > 0;
 
-    if (isLocalStore) {
-
-        notFound($c, "File '" . $product->path . "' does not exist.") unless -e $product->path;
-
-        # Make sure the file is in the Nix store.
-        $path = checkPath($self, $c, $path);
-
-        # If this is a directory but no "/" is attached, then redirect.
-        if (-d $path && substr($c->request->uri, -1) ne "/") {
-            return $c->res->redirect($c->request->uri . "/");
-        }
-
-        $path = "$path/index.html" if -d $path && -e "$path/index.html";
-
-        notFound($c, "File '$path' does not exist.") if !-e $path;
-
-        notFound($c, "Path '$path' is a directory.") if -d $path;
-
-        $c->serve_static_file($path);
-
-    } else {
-        serveFile($c, $path);
-    }
+    serveFile($c, $path);
 
     $c->response->headers->last_modified($c->stash->{build}->stoptime);
 }
